@@ -1,3 +1,5 @@
+import { ROUTES } from '@nestjs/core/router/router-module';
+
 export const PERMISSIONS = {
   ROLES: {
     CREATE: 'role.create',
@@ -23,5 +25,11 @@ export const PERMISSIONS = {
     READ: 'permission.read',
     UPDATE: 'permission.update',
     DELETE: 'permission.delete',
+  },
+  ROUTES_MAPS: {
+    CREATE: 'route-map.create',
+    READ: 'route-map.read',
+    UPDATE: 'route-map.update',
+    DELETE: 'route-map.delete',
   },
 };

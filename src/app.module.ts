@@ -8,6 +8,7 @@ import { RolesModule } from './roles/roles.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { ModulesModule } from './modules/modules.module';
 import { DevController } from './dev/dev.controller';
+import { RouteMapsModule } from './route-maps/route-maps.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { DevController } from './dev/dev.controller';
     RolesModule,
     PermissionsModule,
     ModulesModule,
+    RouteMapsModule,
   ],
   controllers: [DevController],
 })

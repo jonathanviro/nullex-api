@@ -3,6 +3,7 @@ export const moduleDefinitions = [
   { name: 'roles', permissionPrefix: 'role' },
   { name: 'permissions', permissionPrefix: 'permission' },
   { name: 'companies', permissionPrefix: 'company' },
+  { name: 'route-maps', permissionPrefix: 'route-map' },
 ];
 
 export const actions = ['read', 'create', 'update', 'delete'];
