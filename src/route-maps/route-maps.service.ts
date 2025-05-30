@@ -8,23 +8,54 @@ import { handleDatabaseErrors } from 'src/common/helpers/database-error.helper';
 export class RouteMapsService {
   constructor(private readonly routeMapsRepository: RouteMapsRepository) {}
 
-  async create(createDto: CreateRouteMapDto): Promise<RouteMapEntity> {
+  async create(
+    body: { description: string },
+    files: {
+      imgRoute1?: Express.Multer.File[];
+      imgRoute2?: Express.Multer.File[];
+      imgRoute3?: Express.Multer.File[];
+      imgRoute4?: Express.Multer.File[];
+    },
+  ): Promise<RouteMapEntity> {
     try {
-      return await this.routeMapsRepository.create(createDto);
-    } catch (error) {
-      handleDatabaseErrors(error);
-    }
-  }
+      // 1. Crear la ruta sin imágenes
+      const created = await this.routeMapsRepository.create({
+        description: body.description,
+      });
 
-  async find(): Promise<RouteMapEntity> {
-    try {
-      const routeMap = await this.routeMapsRepository.findFirst();
-      if (!routeMap) {
-        throw new NotFoundException(
-          'No se encontró ninguna configuración de rutas',
-        );
+      const updateData: any = {};
+      const imageMap = {
+        imgRoute1: 'route-1',
+        imgRoute2: 'route-2',
+        imgRoute3: 'route-3',
+        imgRoute4: 'route-4',
+      };
+
+      const allowedExts = ['jpg', 'jpeg', 'png'];
+      const fs = require('fs');
+      const path = require('path');
+
+      // 2. Procesar y guardar las imágenes
+      for (const key in imageMap) {
+        const file = files[key]?.[0];
+        if (file) {
+          const ext = file.originalname.split('.').pop()?.toLowerCase();
+          if (!ext || !allowedExts.includes(ext)) {
+            throw new Error(`Formato inválido en ${key}`);
+          }
+
+          const fileName = `${created.id}.${ext}`;
+          const filePath = `uploads/documents/imgs/${imageMap[key]}/${fileName}`;
+          const fullPath = path.resolve(filePath);
+          fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+          fs.writeFileSync(fullPath, file.buffer);
+
+          updateData[key] = filePath;
+        }
       }
-      return routeMap;
+
+      // 3. Actualizar la ruta con los paths de imagen
+      return await this.routeMapsRepository.update(created.id, updateData);
     } catch (error) {
       handleDatabaseErrors(error);
     }
@@ -52,18 +83,7 @@ export class RouteMapsService {
 
   async update(
     id: string,
-    updateDto: UpdateRouteMapDto,
-  ): Promise<RouteMapEntity> {
-    try {
-      await this.findById(id);
-      return await this.routeMapsRepository.update(id, updateDto);
-    } catch (error) {
-      handleDatabaseErrors(error);
-    }
-  }
-
-  async uploadImages(
-    id: string,
+    body: { description?: string },
     files: {
       imgRoute1?: Express.Multer.File[];
       imgRoute2?: Express.Multer.File[];
@@ -77,8 +97,8 @@ export class RouteMapsService {
         throw new NotFoundException(`No se encontró el registro con ID: ${id}`);
       }
 
-      const uploadPath = 'uploads/documents/imgs';
-      const updates: Record<string, string> = {};
+      const updateData: any = {};
+      if (body.description) updateData.description = body.description;
 
       const imageMap = {
         imgRoute1: 'route-1',
@@ -88,31 +108,27 @@ export class RouteMapsService {
       };
 
       const allowedExts = ['jpg', 'jpeg', 'png'];
+      const fs = require('fs');
+      const path = require('path');
 
       for (const key in imageMap) {
         const file = files[key]?.[0];
         if (file) {
           const ext = file.originalname.split('.').pop()?.toLowerCase();
           if (!ext || !allowedExts.includes(ext)) {
-            throw new Error(
-              `Formato inválido para ${key}. Solo se permiten JPG y PNG.`,
-            );
+            throw new Error(`Formato inválido en ${key}`);
           }
 
           const fileName = `${id}.${ext}`;
-          const filePath = `${uploadPath}/${imageMap[key]}/${fileName}`;
-
-          const fs = require('fs');
-          const path = require('path');
+          const filePath = `uploads/documents/imgs/${imageMap[key]}/${fileName}`;
           const fullPath = path.resolve(filePath);
           fs.mkdirSync(path.dirname(fullPath), { recursive: true });
           fs.writeFileSync(fullPath, file.buffer);
-
-          updates[key] = filePath;
+          updateData[key] = filePath;
         }
       }
 
-      return await this.routeMapsRepository.update(id, updates);
+      return await this.routeMapsRepository.update(id, updateData);
     } catch (error) {
       handleDatabaseErrors(error);
     }

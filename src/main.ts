@@ -27,7 +27,7 @@ async function bootstrap() {
     prefix: '/uploads/',
     index: false,
     setHeaders: (res, path, stat) => {
-      const allowedOrigins = ['http://localhost:3000'];
+      const allowedOrigins = ['http://localhost:5173'];
       const requestOrigin = res.req.headers.origin;
 
       // Permite CORS solo desde orígenes permitidos
@@ -43,7 +43,7 @@ async function bootstrap() {
 
   // Configura CORS a nivel global (para todas las rutas)
   app.enableCors({
-    origin: ['http://localhost:3000'],
+    origin: ['http://localhost:5173'],
     credentials: true, // Permite el envío de cookies y headers de autorización
   });
 

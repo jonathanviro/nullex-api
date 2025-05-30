@@ -29,17 +29,28 @@ export class RouteMapsController {
   @Post()
   @Permissions(PERMISSIONS.ROUTES_MAPS.CREATE)
   @SuccessMessage('Ruta del mapa creada exitosamente')
-  async create(@Body() dto: CreateRouteMapDto): Promise<RouteMapEntity> {
-    return this.routeMapsService.create(dto);
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'imgRoute1', maxCount: 1 },
+      { name: 'imgRoute2', maxCount: 1 },
+      { name: 'imgRoute3', maxCount: 1 },
+      { name: 'imgRoute4', maxCount: 1 },
+    ]),
+  )
+  async create(
+    @Body() body: { description: string },
+    @UploadedFiles()
+    files: {
+      imgRoute1?: Express.Multer.File[];
+      imgRoute2?: Express.Multer.File[];
+      imgRoute3?: Express.Multer.File[];
+      imgRoute4?: Express.Multer.File[];
+    },
+  ): Promise<RouteMapEntity> {
+    return this.routeMapsService.create(body, files);
   }
 
   @Get()
-  @Permissions(PERMISSIONS.ROUTES_MAPS.READ)
-  async find(): Promise<RouteMapEntity> {
-    return this.routeMapsService.find();
-  }
-
-  @Get('all')
   @Permissions(PERMISSIONS.ROUTES_MAPS.READ)
   async findAll(): Promise<RouteMapEntity[]> {
     return this.routeMapsService.findAll();
@@ -54,16 +65,6 @@ export class RouteMapsController {
   @Patch(':id')
   @Permissions(PERMISSIONS.ROUTES_MAPS.UPDATE)
   @SuccessMessage('Ruta del mapa actualizada exitosamente')
-  async update(
-    @Param('id') id: string,
-    @Body() dto: UpdateRouteMapDto,
-  ): Promise<RouteMapEntity> {
-    return this.routeMapsService.update(id, dto);
-  }
-
-  @Patch(':id/upload-images')
-  @Permissions(PERMISSIONS.ROUTES_MAPS.UPDATE)
-  @SuccessMessage('Imágenes de ruta actualizadas exitosamente')
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'imgRoute1', maxCount: 1 },
@@ -72,7 +73,7 @@ export class RouteMapsController {
       { name: 'imgRoute4', maxCount: 1 },
     ]),
   )
-  async uploadImages(
+  async update(
     @Param('id') id: string,
     @UploadedFiles()
     files: {
@@ -81,7 +82,8 @@ export class RouteMapsController {
       imgRoute3?: Express.Multer.File[];
       imgRoute4?: Express.Multer.File[];
     },
+    @Body() body: { description?: string },
   ): Promise<RouteMapEntity> {
-    return this.routeMapsService.uploadImages(id, files);
+    return this.routeMapsService.update(id, body, files);
   }
 }

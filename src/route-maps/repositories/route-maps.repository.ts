@@ -17,11 +17,6 @@ export class RouteMapsRepository {
     }
   }
 
-  async findFirst(): Promise<RouteMapEntity | null> {
-    const result = await this.prisma.routeMap.findFirst();
-    return result ? new RouteMapEntity(result) : null;
-  }
-
   async findAll(): Promise<RouteMapEntity[]> {
     const items = await this.prisma.routeMap.findMany();
     return items.map((item) => new RouteMapEntity(item));
@@ -32,7 +27,10 @@ export class RouteMapsRepository {
     return result ? new RouteMapEntity(result) : null;
   }
 
-  async update(id: string, data: UpdateRouteMapDto): Promise<RouteMapEntity> {
+  async update(
+    id: string,
+    data: UpdateRouteMapDto | Record<string, any>,
+  ): Promise<RouteMapEntity> {
     try {
       const updated = await this.prisma.routeMap.update({
         where: { id },
